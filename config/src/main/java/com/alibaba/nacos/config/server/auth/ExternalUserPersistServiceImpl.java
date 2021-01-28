@@ -22,6 +22,7 @@ import com.alibaba.nacos.config.server.model.User;
 import com.alibaba.nacos.config.server.service.repository.extrnal.ExternalStoragePersistServiceImpl;
 import com.alibaba.nacos.config.server.service.repository.PaginationHelper;
 import com.alibaba.nacos.config.server.utils.LogUtil;
+import com.alibaba.nacos.sys.env.EnvUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -149,8 +150,28 @@ public class ExternalUserPersistServiceImpl implements UserPersistService {
 
     @Override
     public List<String> findUserLikeUsername(String username) {
-        String sql = "SELECT username FROM users WHERE username like '%' ? '%'";
-        List<String> users = this.jt.queryForList(sql, new String[]{username}, String.class);
+        String datasourcePlatform = getString("spring.datasource.platform", "");
+        List<String> users = new ArrayList<>();
+        if ("mysql".equalsIgnoreCase(datasourcePlatform)) {
+            String sql = "SELECT username FROM users WHERE username like '%' ? '%'";
+            users = this.jt.queryForList(sql, new String[]{username}, String.class);
+        } else if ("postgresql".equalsIgnoreCase(datasourcePlatform)) {
+            String sql = "SELECT username FROM users WHERE username like '%" + username + "%'";
+            users = this.jt.queryForList(sql, null, String.class);
+        }
         return users;
     }
+
+    private String getString(String key, String defaultValue) {
+        String value = getProperty(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
+
+    public String getProperty(String key) {
+        return EnvUtil.getProperty(key);
+    }
+
 }

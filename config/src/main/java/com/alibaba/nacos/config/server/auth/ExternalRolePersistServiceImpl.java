@@ -21,6 +21,7 @@ import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.service.repository.PaginationHelper;
 import com.alibaba.nacos.config.server.service.repository.extrnal.ExternalStoragePersistServiceImpl;
 import com.alibaba.nacos.config.server.utils.LogUtil;
+import com.alibaba.nacos.sys.env.EnvUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
@@ -157,8 +158,15 @@ public class ExternalRolePersistServiceImpl implements RolePersistService {
     
     @Override
     public List<String> findRolesLikeRoleName(String role) {
-        String sql = "SELECT role FROM roles WHERE role like '%' ? '%'";
-        List<String> users = this.jt.queryForList(sql, new String[] {role}, String.class);
+        String datasourcePlatform = getString("spring.datasource.platform", "");
+        List<String> users = new ArrayList<>();
+        if ("mysql".equalsIgnoreCase(datasourcePlatform)) {
+            String sql = "SELECT role FROM roles WHERE role like '%' ? '%'";
+            users = this.jt.queryForList(sql, new String[] {role}, String.class);
+        } else if ("postgresql".equalsIgnoreCase(datasourcePlatform)) {
+            String sql = "SELECT role FROM roles WHERE role like '%" + role + "%'";
+            users = this.jt.queryForList(sql, null, String.class);
+        }
         return users;
     }
     
@@ -172,4 +180,17 @@ public class ExternalRolePersistServiceImpl implements RolePersistService {
             return roleInfo;
         }
     }
+
+    private String getString(String key, String defaultValue) {
+        String value = getProperty(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
+
+    public String getProperty(String key) {
+        return EnvUtil.getProperty(key);
+    }
+
 }

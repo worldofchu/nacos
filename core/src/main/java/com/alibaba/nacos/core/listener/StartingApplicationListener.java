@@ -227,7 +227,8 @@ public class StartingApplicationListener implements NacosApplicationListener {
     private void judgeStorageMode(ConfigurableEnvironment env) {
         
         // External data sources are used by default in cluster mode
-        boolean useExternalStorage = ("mysql".equalsIgnoreCase(env.getProperty("spring.datasource.platform", "")));
+        String datasourcePlatform = env.getProperty("spring.datasource.platform", "");
+        boolean useExternalStorage = ("mysql".equalsIgnoreCase(datasourcePlatform) || "postgresql".equalsIgnoreCase(datasourcePlatform));
         
         // must initialize after setUseExternalDB
         // This value is true in stand-alone mode and false in cluster mode

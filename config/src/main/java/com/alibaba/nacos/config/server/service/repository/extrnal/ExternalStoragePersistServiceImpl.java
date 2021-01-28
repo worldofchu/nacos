@@ -44,6 +44,7 @@ import com.alibaba.nacos.config.server.service.repository.PaginationHelper;
 import com.alibaba.nacos.config.server.service.repository.PersistService;
 import com.alibaba.nacos.config.server.utils.LogUtil;
 import com.alibaba.nacos.config.server.utils.ParamUtils;
+import com.alibaba.nacos.sys.env.EnvUtil;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
@@ -1963,7 +1964,13 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
             jt.update(new PreparedStatementCreator() {
                 @Override
                 public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-                    PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                    String datasourcePlatform = getString("spring.datasource.platform", "");
+                    PreparedStatement ps = null;
+                    if ("mysql".equalsIgnoreCase(datasourcePlatform)) {
+                        ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                    } else if ("postgresql".equalsIgnoreCase(datasourcePlatform)) {
+                        ps = connection.prepareStatement(sql, new String[]{"id"});
+                    }
                     ps.setString(1, configInfo.getDataId());
                     ps.setString(2, configInfo.getGroup());
                     ps.setString(3, tenantTmp);
@@ -2656,6 +2663,18 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
             return 0;
         }
         return result.intValue();
+    }
+
+    private String getString(String key, String defaultValue) {
+        String value = getProperty(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
+
+    public String getProperty(String key) {
+        return EnvUtil.getProperty(key);
     }
     
 }

@@ -91,7 +91,12 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
         } else if (lastMaxId != null) {
             selectSql = sqlFetchRows + " and id > " + lastMaxId + " order by id asc" + " limit " + 0 + "," + pageSize;
         } else {
-            selectSql = sqlFetchRows + " limit " + startRow + "," + pageSize;
+            String datasourcePlatform = getString("spring.datasource.platform", "");
+            if ("mysql".equalsIgnoreCase(datasourcePlatform)) {
+                selectSql = sqlFetchRows + " limit " + startRow + "," + pageSize;
+            } else if ("postgresql".equalsIgnoreCase(datasourcePlatform)) {
+                selectSql = sqlFetchRows + " limit " + pageSize + " offset " + startRow;
+            }
         }
         
         List<E> result = jdbcTemplate.query(selectSql, args, rowMapper);
@@ -216,6 +221,18 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
     private boolean isDerby() {
         return (EnvUtil.getStandaloneMode() && !PropertyUtil.isUseExternalDB()) || PropertyUtil
                 .isEmbeddedStorage();
+    }
+
+    private String getString(String key, String defaultValue) {
+        String value = getProperty(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
+
+    public String getProperty(String key) {
+        return EnvUtil.getProperty(key);
     }
     
 }
