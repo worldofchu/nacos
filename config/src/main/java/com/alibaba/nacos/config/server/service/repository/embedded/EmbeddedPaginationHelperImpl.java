@@ -22,6 +22,7 @@ import com.alibaba.nacos.config.server.service.sql.EmbeddedStorageContextUtils;
 
 import java.util.List;
 
+import com.alibaba.nacos.sys.env.EnvUtil;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -32,13 +33,13 @@ import org.springframework.jdbc.core.RowMapper;
  * @date 2010-5-6
  */
 class EmbeddedPaginationHelperImpl<E> implements PaginationHelper {
-    
+
     private final DatabaseOperate databaseOperate;
-    
+
     public EmbeddedPaginationHelperImpl(DatabaseOperate databaseOperate) {
         this.databaseOperate = databaseOperate;
     }
-    
+
     /**
      * Take paging.
      *
@@ -54,45 +55,45 @@ class EmbeddedPaginationHelperImpl<E> implements PaginationHelper {
             final int pageNo, final int pageSize, final RowMapper rowMapper) {
         return fetchPage(sqlCountRows, sqlFetchRows, args, pageNo, pageSize, null, rowMapper);
     }
-    
+
     public Page<E> fetchPage(final String sqlCountRows, final String sqlFetchRows, final Object[] args,
             final int pageNo, final int pageSize, final Long lastMaxId, final RowMapper rowMapper) {
         if (pageNo <= 0 || pageSize <= 0) {
             throw new IllegalArgumentException("pageNo and pageSize must be greater than zero");
         }
-        
+
         // Query the total number of current records
         Integer rowCountInt = databaseOperate.queryOne(sqlCountRows, args, Integer.class);
         if (rowCountInt == null) {
             throw new IllegalArgumentException("fetchPageLimit error");
         }
-        
+
         // Count pages
         int pageCount = rowCountInt / pageSize;
         if (rowCountInt > pageSize * pageCount) {
             pageCount++;
         }
-        
+
         // Create Page object
         final Page<E> page = new Page<E>();
         page.setPageNumber(pageNo);
         page.setPagesAvailable(pageCount);
         page.setTotalCount(rowCountInt);
-        
+
         if (pageNo > pageCount) {
             return page;
         }
-        
+
         final int startRow = (pageNo - 1) * pageSize;
         String selectSql = sqlFetchRows + " OFFSET " + startRow + " ROWS FETCH NEXT " + pageSize + " ROWS ONLY";
-        
+
         List<E> result = databaseOperate.queryMany(selectSql, args, rowMapper);
         for (E item : result) {
             page.getPageItems().add(item);
         }
         return page;
     }
-    
+
     public Page<E> fetchPageLimit(final String sqlCountRows, final String sqlFetchRows, final Object[] args,
             final int pageNo, final int pageSize, final RowMapper rowMapper) {
         if (pageNo <= 0 || pageSize <= 0) {
@@ -103,31 +104,37 @@ class EmbeddedPaginationHelperImpl<E> implements PaginationHelper {
         if (rowCountInt == null) {
             throw new IllegalArgumentException("fetchPageLimit error");
         }
-        
+
         // Count pages
         int pageCount = rowCountInt / pageSize;
         if (rowCountInt > pageSize * pageCount) {
             pageCount++;
         }
-        
+
         // Create Page object
         final Page<E> page = new Page<E>();
         page.setPageNumber(pageNo);
         page.setPagesAvailable(pageCount);
         page.setTotalCount(rowCountInt);
-        
+
         if (pageNo > pageCount) {
             return page;
         }
-        
-        String selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        String selectSql = "";
+        String datasourcePlatform = getString("spring.datasource.platform", "");
+        if ("mysql".equalsIgnoreCase(datasourcePlatform)) {
+            selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        } else if ("postgresql".equalsIgnoreCase(datasourcePlatform)) {
+            selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
+        }
         List<E> result = databaseOperate.queryMany(selectSql, args, rowMapper);
         for (E item : result) {
             page.getPageItems().add(item);
         }
         return page;
     }
-    
+
     public Page<E> fetchPageLimit(final String sqlCountRows, final Object[] args1, final String sqlFetchRows,
             final Object[] args2, final int pageNo, final int pageSize, final RowMapper rowMapper) {
         if (pageNo <= 0 || pageSize <= 0) {
@@ -138,32 +145,38 @@ class EmbeddedPaginationHelperImpl<E> implements PaginationHelper {
         if (rowCountInt == null) {
             throw new IllegalArgumentException("fetchPageLimit error");
         }
-        
+
         // Count pages
         int pageCount = rowCountInt / pageSize;
         if (rowCountInt > pageSize * pageCount) {
             pageCount++;
         }
-        
+
         // Create Page object
         final Page<E> page = new Page<E>();
         page.setPageNumber(pageNo);
         page.setPagesAvailable(pageCount);
         page.setTotalCount(rowCountInt);
-        
+
         if (pageNo > pageCount) {
             return page;
         }
-        
-        String selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-        
+
+        String selectSql = "";
+        String datasourcePlatform = getString("spring.datasource.platform", "");
+        if ("mysql".equalsIgnoreCase(datasourcePlatform)) {
+            selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        } else if ("postgresql".equalsIgnoreCase(datasourcePlatform)) {
+            selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
+        }
+
         List<E> result = databaseOperate.queryMany(selectSql, args2, rowMapper);
         for (E item : result) {
             page.getPageItems().add(item);
         }
         return page;
     }
-    
+
     public Page<E> fetchPageLimit(final String sqlFetchRows, final Object[] args, final int pageNo, final int pageSize,
             final RowMapper rowMapper) {
         if (pageNo <= 0 || pageSize <= 0) {
@@ -171,19 +184,25 @@ class EmbeddedPaginationHelperImpl<E> implements PaginationHelper {
         }
         // Create Page object
         final Page<E> page = new Page<E>();
-        
-        String selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-        
+
+        String selectSql = "";
+        String datasourcePlatform = getString("spring.datasource.platform", "");
+        if ("mysql".equalsIgnoreCase(datasourcePlatform)) {
+            selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        } else if ("postgresql".equalsIgnoreCase(datasourcePlatform)) {
+            selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
+        }
+
         List<E> result = databaseOperate.queryMany(selectSql, args, rowMapper);
         for (E item : result) {
             page.getPageItems().add(item);
         }
         return page;
     }
-    
+
     public void updateLimit(final String sql, final Object[] args) {
         String sqlUpdate = sql.replaceAll("limit \\?", "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY");
-        
+
         EmbeddedStorageContextUtils.addSqlContext(sqlUpdate, args);
         try {
             databaseOperate.update(EmbeddedStorageContextUtils.getCurrentSqlContext());
@@ -191,5 +210,17 @@ class EmbeddedPaginationHelperImpl<E> implements PaginationHelper {
             EmbeddedStorageContextUtils.cleanAllContext();
         }
     }
-    
+
+    private String getString(String key, String defaultValue) {
+        String value = getProperty(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
+
+    public String getProperty(String key) {
+        return EnvUtil.getProperty(key);
+    }
+
 }
