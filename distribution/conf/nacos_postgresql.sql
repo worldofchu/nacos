@@ -1,3 +1,20 @@
+/*
+ Navicat Premium Data Transfer
+
+ Source Server         : localhost-nacos_config
+ Source Server Type    : PostgreSQL
+ Source Server Version : 120002
+ Source Host           : localhost:5432
+ Source Catalog        : nacos_config
+ Source Schema         : public
+
+ Target Server Type    : PostgreSQL
+ Target Server Version : 120002
+ File Encoding         : 65001
+
+ Date: 01/02/2021 16:13:27
+*/
+
 CREATE TABLE config_info (
   id bigserial NOT NULL,
   data_id varchar(255) NOT NULL ,
@@ -17,7 +34,7 @@ CREATE TABLE config_info (
   c_schema text,
   PRIMARY KEY (id),
   constraint uk_configinfo_datagrouptenant unique(data_id,group_id,tenant_id)
-); 
+);
 
 
 /**************增加租户字段****************************/
@@ -107,7 +124,7 @@ CREATE TABLE config_tags_relation (
   constraint uk_configtagrelation_configidtag unique(id,tag_name,tag_type)
 );
 
-CREATE INDEX idx_tenant_id ON config_tags_relation (tenant_id);    
+CREATE INDEX idx_tenant_id ON config_tags_relation (tenant_id);
 
 
 /******************************************/
@@ -161,9 +178,9 @@ CREATE TABLE his_config_info (
   tenant_id varchar(128) DEFAULT '',
   PRIMARY KEY (nid)
 );
-CREATE INDEX idx_gmt_create ON his_config_info (gmt_create);    
-CREATE INDEX idx_gmt_modified ON his_config_info (gmt_modified);   
-CREATE INDEX idx_did ON his_config_info (data_id); 
+CREATE INDEX idx_gmt_create ON his_config_info (gmt_create);
+CREATE INDEX idx_gmt_modified ON his_config_info (gmt_modified);
+CREATE INDEX idx_did ON his_config_info (data_id);
 
 
 /******************************************/
@@ -212,7 +229,7 @@ comment on column tenant_info.gmt_create is '创建时间';
 comment on column tenant_info.gmt_modified is '修改时间';
 comment on column tenant_info.id is '主键id';
 
-CREATE INDEX idx_tenant_info_tenant_id ON tenant_info (tenant_id); 
+CREATE INDEX idx_tenant_info_tenant_id ON tenant_info (tenant_id);
 
 
 CREATE TABLE users (
@@ -225,14 +242,14 @@ CREATE TABLE roles (
 	username varchar(50) NOT NULL,
 	"role" varchar(50) NOT NULL
 );
-CREATE INDEX idx_user_role ON roles (username, "role"); 
+CREATE INDEX idx_user_role ON roles (username, "role");
 
 CREATE TABLE permissions (
     "role" varchar(50) NOT NULL,
     resource varchar(255) NOT NULL,
     "action" varchar(8) NOT NULL
 );
-CREATE INDEX uk_role_permission ON permissions ("role",resource,"action"); 
+CREATE INDEX uk_role_permission ON permissions ("role",resource,"action");
 
 INSERT INTO users (username, password, enabled) VALUES ('nacos', '$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu', TRUE);
 
