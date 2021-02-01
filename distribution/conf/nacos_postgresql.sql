@@ -12,7 +12,9 @@
  Target Server Version : 120002
  File Encoding         : 65001
 
- Date: 01/02/2021 16:13:27
+ @author wangtan
+ @date 2021-02-01 16:41:17
+ @since 1.0
 */
 
 CREATE TABLE config_info (
