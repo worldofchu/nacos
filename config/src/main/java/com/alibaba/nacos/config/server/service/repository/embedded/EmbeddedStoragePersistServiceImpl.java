@@ -1243,11 +1243,11 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
     public List<String> getTenantIdList(int page, int pageSize) {
         PaginationHelper<Map<String, Object>> helper = createPaginationHelper();
         
-        String sql = "SELECT tenant_id FROM config_info WHERE tenant_id != '' GROUP BY tenant_id LIMIT ?,?";
+        String sql = "SELECT tenant_id FROM config_info WHERE tenant_id != '' GROUP BY tenant_id LIMIT ? OFFSET ?";
         int from = (page - 1) * pageSize;
         
         Page<Map<String, Object>> pageList = helper
-                .fetchPageLimit(sql, new Object[] {from, pageSize}, page, pageSize, MAP_ROW_MAPPER);
+                .fetchPageLimit(sql, new Object[] {pageSize, from}, page, pageSize, MAP_ROW_MAPPER);
         return pageList.getPageItems().stream().map(map -> String.valueOf(map.get("TENANT_ID")))
                 .collect(Collectors.toList());
     }
@@ -1256,11 +1256,11 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
     public List<String> getGroupIdList(int page, int pageSize) {
         PaginationHelper<Map<String, Object>> helper = createPaginationHelper();
         
-        String sql = "SELECT group_id FROM config_info WHERE tenant_id ='' GROUP BY group_id LIMIT ?,?";
+        String sql = "SELECT group_id FROM config_info WHERE tenant_id ='' GROUP BY group_id LIMIT ? OFFSET ?";
         int from = (page - 1) * pageSize;
         
         Page<Map<String, Object>> pageList = helper
-                .fetchPageLimit(sql, new Object[] {from, pageSize}, page, pageSize, MAP_ROW_MAPPER);
+                .fetchPageLimit(sql, new Object[] {pageSize, from}, page, pageSize, MAP_ROW_MAPPER);
         return pageList.getPageItems().stream().map(map -> String.valueOf(map.get("GROUP_ID")))
                 .collect(Collectors.toList());
     }
@@ -1322,12 +1322,12 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
         String tenantTmp = StringUtils.isBlank(tenant) ? StringUtils.EMPTY : tenant;
         String sqlCountRows = "SELECT COUNT(*) FROM config_info";
         String sqlFetchRows = " SELECT t.id,data_id,group_id,tenant_id,app_name,content,md5 "
-                + " FROM ( SELECT id FROM config_info  WHERE tenant_id like ? ORDER BY id LIMIT ?,? )"
+                + " FROM ( SELECT id FROM config_info  WHERE tenant_id like ? ORDER BY id LIMIT ? OFFSET ? )"
                 + " g, config_info t  WHERE g.id = t.id ";
         
         PaginationHelper<ConfigInfo> helper = createPaginationHelper();
         return helper.fetchPageLimit(sqlCountRows, sqlFetchRows,
-                new Object[] {generateLikeArgument(tenantTmp), (pageNo - 1) * pageSize, pageSize}, pageNo, pageSize,
+                new Object[] {generateLikeArgument(tenantTmp), pageSize, (pageNo - 1) * pageSize}, pageNo, pageSize,
                 CONFIG_INFO_ROW_MAPPER);
         
     }
@@ -1369,12 +1369,12 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
     public Page<ConfigInfoBase> findAllConfigInfoBase(final int pageNo, final int pageSize) {
         String sqlCountRows = "SELECT COUNT(*) FROM config_info";
         String sqlFetchRows = "SELECT t.id,data_id,group_id,content,md5 "
-                + " FROM ( SELECT id FROM config_info ORDER BY id LIMIT ?,? )  "
+                + " FROM ( SELECT id FROM config_info ORDER BY id LIMIT ? OFFSET ? )  "
                 + " g, config_info t WHERE g.id = t.id ";
         
         PaginationHelper<ConfigInfoBase> helper = createPaginationHelper();
         return helper
-                .fetchPageLimit(sqlCountRows, sqlFetchRows, new Object[] {(pageNo - 1) * pageSize, pageSize}, pageNo,
+                .fetchPageLimit(sqlCountRows, sqlFetchRows, new Object[] {pageSize, (pageNo - 1) * pageSize}, pageNo,
                         pageSize, CONFIG_INFO_BASE_ROW_MAPPER);
         
     }
@@ -1383,7 +1383,7 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
     public Page<ConfigInfoWrapper> findAllConfigInfoForDumpAll(final int pageNo, final int pageSize) {
         String sqlCountRows = "select count(*) from config_info";
         String sqlFetchRows = " SELECT t.id,data_id,group_id,tenant_id,app_name,content,type,md5,gmt_modified "
-                + " FROM ( SELECT id FROM config_info ORDER BY id LIMIT ?,? )"
+                + " FROM ( SELECT id FROM config_info ORDER BY id LIMIT ? OFFSET ? )"
                 + " g, config_info t  WHERE g.id = t.id ";
         
         PaginationHelper<ConfigInfoWrapper> helper = createPaginationHelper();
@@ -1397,9 +1397,9 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
     public Page<ConfigInfoWrapper> findAllConfigInfoFragment(final long lastMaxId, final int pageSize) {
         String select =
                 "SELECT id,data_id,group_id,tenant_id,app_name,content,md5,gmt_modified,type from config_info where id > ? "
-                        + "order by id asc limit ?,?";
+                        + "order by id asc limit ? OFFSET ?";
         PaginationHelper<ConfigInfoWrapper> helper = createPaginationHelper();
-        return helper.fetchPageLimit(select, new Object[] {lastMaxId, 0, pageSize}, 1, pageSize,
+        return helper.fetchPageLimit(select, new Object[] {lastMaxId, pageSize, 0}, 1, pageSize,
                 CONFIG_INFO_WRAPPER_ROW_MAPPER);
         
     }
@@ -1408,11 +1408,11 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
     public Page<ConfigInfoBetaWrapper> findAllConfigInfoBetaForDumpAll(final int pageNo, final int pageSize) {
         String sqlCountRows = "SELECT COUNT(*) FROM config_info_beta";
         String sqlFetchRows = " SELECT t.id,data_id,group_id,tenant_id,app_name,content,md5,gmt_modified,beta_ips "
-                + " FROM (  SELECT id FROM config_info_beta ORDER BY id LIMIT ?,?  )"
+                + " FROM (  SELECT id FROM config_info_beta ORDER BY id LIMIT ? OFFSET ?  )"
                 + " g, config_info_beta t WHERE g.id = t.id  ";
         PaginationHelper<ConfigInfoBetaWrapper> helper = createPaginationHelper();
         return helper
-                .fetchPageLimit(sqlCountRows, sqlFetchRows, new Object[] {(pageNo - 1) * pageSize, pageSize}, pageNo,
+                .fetchPageLimit(sqlCountRows, sqlFetchRows, new Object[] {pageSize, (pageNo - 1) * pageSize}, pageNo,
                         pageSize, CONFIG_INFO_BETA_WRAPPER_ROW_MAPPER);
         
     }
@@ -1421,11 +1421,11 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
     public Page<ConfigInfoTagWrapper> findAllConfigInfoTagForDumpAll(final int pageNo, final int pageSize) {
         String sqlCountRows = "SELECT COUNT(*) FROM config_info_tag";
         String sqlFetchRows = " SELECT t.id,data_id,group_id,tenant_id,tag_id,app_name,content,md5,gmt_modified "
-                + " FROM ( SELECT id FROM config_info_tag  ORDER BY id LIMIT ?,? ) "
+                + " FROM ( SELECT id FROM config_info_tag  ORDER BY id LIMIT ? OFFSET ? ) "
                 + " g, config_info_tag t  WHERE g.id = t.id ";
         PaginationHelper<ConfigInfoTagWrapper> helper = createPaginationHelper();
         return helper
-                .fetchPageLimit(sqlCountRows, sqlFetchRows, new Object[] {(pageNo - 1) * pageSize, pageSize}, pageNo,
+                .fetchPageLimit(sqlCountRows, sqlFetchRows, new Object[] {pageSize, (pageNo - 1) * pageSize}, pageNo,
                         pageSize, CONFIG_INFO_TAG_WRAPPER_ROW_MAPPER);
         
     }
@@ -1748,10 +1748,10 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
         String sqlCountRows = "SELECT COUNT(*) FROM config_info_aggr WHERE data_id = ? and group_id = ? and tenant_id = ?";
         String sqlFetchRows =
                 "select data_id,group_id,tenant_id,datum_id,app_name,content from config_info_aggr where data_id=? and "
-                        + "group_id=? and tenant_id=? order by datum_id limit ?,?";
+                        + "group_id=? and tenant_id=? order by datum_id limit ? OFFSET ?";
         PaginationHelper<ConfigInfoAggr> helper = createPaginationHelper();
         return helper.fetchPageLimit(sqlCountRows, new Object[] {dataId, group, tenantTmp}, sqlFetchRows,
-                new Object[] {dataId, group, tenantTmp, (pageNo - 1) * pageSize, pageSize}, pageNo, pageSize,
+                new Object[] {dataId, group, tenantTmp, pageSize, (pageNo - 1) * pageSize}, pageNo, pageSize,
                 CONFIG_INFO_AGGR_ROW_MAPPER);
         
     }
@@ -2338,10 +2338,10 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
     @Override
     public List<ConfigInfoWrapper> listGroupKeyMd5ByPage(int pageNo, int pageSize) {
         String sqlCountRows = " SELECT COUNT(*) FROM config_info ";
-        String sqlFetchRows = " SELECT t.id,data_id,group_id,tenant_id,app_name,type,md5,gmt_modified FROM ( SELECT id FROM config_info ORDER BY id LIMIT ?,?  ) g, config_info t WHERE g.id = t.id";
+        String sqlFetchRows = " SELECT t.id,data_id,group_id,tenant_id,app_name,type,md5,gmt_modified FROM ( SELECT id FROM config_info ORDER BY id LIMIT ? OFFSET ?  ) g, config_info t WHERE g.id = t.id";
         PaginationHelper<ConfigInfoWrapper> helper = createPaginationHelper();
         Page<ConfigInfoWrapper> page = helper
-                .fetchPageLimit(sqlCountRows, sqlFetchRows, new Object[] {(pageNo - 1) * pageSize, pageSize}, pageNo,
+                .fetchPageLimit(sqlCountRows, sqlFetchRows, new Object[] {pageSize, (pageNo - 1) * pageSize}, pageNo,
                         pageSize, CONFIG_INFO_WRAPPER_ROW_MAPPER);
         
         return page.getPageItems();

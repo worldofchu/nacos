@@ -13,6 +13,8 @@
 
 package com.alibaba.nacos.config.server.service.datasource;
 
+import com.alibaba.nacos.config.server.constant.PropertiesConstant;
+import com.alibaba.nacos.sys.env.DatasourceUtil;
 import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.collections.CollectionUtils;
@@ -35,6 +37,8 @@ import static com.alibaba.nacos.common.utils.CollectionUtils.getOrDefault;
 public class ExternalDataSourceProperties {
     
     private static final String JDBC_DRIVER_NAME = "com.mysql.cj.jdbc.Driver";
+
+    private static final String POSTGRESQL_JDBC_DRIVER_NAME = "org.postgresql.Driver";
     
     private static final String TEST_QUERY = "SELECT 1";
     
@@ -79,7 +83,19 @@ public class ExternalDataSourceProperties {
             int currentSize = index + 1;
             Preconditions.checkArgument(url.size() >= currentSize, "db.url.%s is null", index);
             DataSourcePoolProperties poolProperties = DataSourcePoolProperties.build(environment);
-            poolProperties.setDriverClassName(JDBC_DRIVER_NAME);
+
+            switch (DatasourceUtil.getDatasourcePlatform()) {
+                case PropertiesConstant.MYSQL:
+                    poolProperties.setDriverClassName(JDBC_DRIVER_NAME);
+                    break;
+                case PropertiesConstant.POSTGRESQL:
+                    poolProperties.setDriverClassName(POSTGRESQL_JDBC_DRIVER_NAME);
+                    break;
+                default:
+                    poolProperties.setDriverClassName(JDBC_DRIVER_NAME);
+                    break;
+            }
+
             poolProperties.setJdbcUrl(url.get(index).trim());
             poolProperties.setUsername(getOrDefault(user, index, user.get(0)).trim());
             poolProperties.setPassword(getOrDefault(password, index, password.get(0)).trim());

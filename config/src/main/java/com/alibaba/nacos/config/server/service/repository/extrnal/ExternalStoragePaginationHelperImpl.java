@@ -16,10 +16,12 @@
 
 package com.alibaba.nacos.config.server.service.repository.extrnal;
 
+import com.alibaba.nacos.config.server.constant.PropertiesConstant;
 import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.service.repository.PaginationHelper;
 import com.alibaba.nacos.config.server.service.sql.EmbeddedStorageContextUtils;
 import com.alibaba.nacos.config.server.utils.PropertyUtil;
+import com.alibaba.nacos.sys.env.DatasourceUtil;
 import com.alibaba.nacos.sys.env.EnvUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -93,7 +95,17 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
         } else if (lastMaxId != null) {
             selectSql = sqlFetchRows + " and id > " + lastMaxId + " order by id asc" + " limit " + 0 + "," + pageSize;
         } else {
-            selectSql = sqlFetchRows + " limit " + startRow + "," + pageSize;
+            switch (DatasourceUtil.getDatasourcePlatform()) {
+                case PropertiesConstant.MYSQL:
+                    selectSql = sqlFetchRows + " limit " + startRow + "," + pageSize;
+                    break;
+                case PropertiesConstant.POSTGRESQL:
+                    selectSql = sqlFetchRows + " limit " + pageSize + " offset " + startRow;
+                    break;
+                default:
+                    selectSql = sqlFetchRows + " limit " + startRow + "," + pageSize;
+                    break;
+            }
         }
         
         List<E> result = jdbcTemplate.query(selectSql, args, rowMapper);
@@ -133,7 +145,17 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
         
         String selectSql = sqlFetchRows;
         if (isDerby()) {
-            selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            switch (DatasourceUtil.getDatasourcePlatform()) {
+                case PropertiesConstant.MYSQL:
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                    break;
+                case PropertiesConstant.POSTGRESQL:
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
+                    break;
+                default:
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                    break;
+            }
         }
         
         List<E> result = jdbcTemplate.query(selectSql, args, rowMapper);
@@ -173,7 +195,17 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
         
         String selectSql = sqlFetchRows;
         if (isDerby()) {
-            selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            switch (DatasourceUtil.getDatasourcePlatform()) {
+                case PropertiesConstant.MYSQL:
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                    break;
+                case PropertiesConstant.POSTGRESQL:
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
+                    break;
+                default:
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                    break;
+            }
         }
         
         List<E> result = jdbcTemplate.query(selectSql, args2, rowMapper);
@@ -194,7 +226,17 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
         
         String selectSql = sqlFetchRows;
         if (isDerby()) {
-            selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            switch (DatasourceUtil.getDatasourcePlatform()) {
+                case PropertiesConstant.MYSQL:
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                    break;
+                case PropertiesConstant.POSTGRESQL:
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
+                    break;
+                default:
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                    break;
+            }
         }
         
         List<E> result = jdbcTemplate.query(selectSql, args, rowMapper);

@@ -16,12 +16,14 @@
 
 package com.alibaba.nacos.config.server.service.repository.embedded;
 
+import com.alibaba.nacos.config.server.constant.PropertiesConstant;
 import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.service.repository.PaginationHelper;
 import com.alibaba.nacos.config.server.service.sql.EmbeddedStorageContextUtils;
 
 import java.util.List;
 
+import com.alibaba.nacos.sys.env.DatasourceUtil;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -123,7 +125,19 @@ class EmbeddedPaginationHelperImpl<E> implements PaginationHelper {
             return page;
         }
         
-        String selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        String selectSql;
+        switch (DatasourceUtil.getDatasourcePlatform()) {
+            case PropertiesConstant.MYSQL:
+                selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                break;
+            case PropertiesConstant.POSTGRESQL:
+                selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
+                break;
+            default:
+                selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                break;
+        }
+
         List<E> result = databaseOperate.queryMany(selectSql, args, rowMapper);
         for (E item : result) {
             page.getPageItems().add(item);
@@ -159,7 +173,18 @@ class EmbeddedPaginationHelperImpl<E> implements PaginationHelper {
             return page;
         }
         
-        String selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        String selectSql;
+        switch (DatasourceUtil.getDatasourcePlatform()) {
+            case PropertiesConstant.MYSQL:
+                selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                break;
+            case PropertiesConstant.POSTGRESQL:
+                selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
+                break;
+            default:
+                selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                break;
+        }
         
         List<E> result = databaseOperate.queryMany(selectSql, args2, rowMapper);
         for (E item : result) {
@@ -177,7 +202,18 @@ class EmbeddedPaginationHelperImpl<E> implements PaginationHelper {
         // Create Page object
         final Page<E> page = new Page<E>();
         
-        String selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        String selectSql;
+        switch (DatasourceUtil.getDatasourcePlatform()) {
+            case PropertiesConstant.MYSQL:
+                selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                break;
+            case PropertiesConstant.POSTGRESQL:
+                selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
+                break;
+            default:
+                selectSql = sqlFetchRows.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                break;
+        }
         
         List<E> result = databaseOperate.queryMany(selectSql, args, rowMapper);
         for (E item : result) {
