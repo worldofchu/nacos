@@ -19,9 +19,9 @@ package com.alibaba.nacos.naming.core;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
+import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.alibaba.nacos.common.utils.InternetAddressUtil;
 import com.alibaba.nacos.common.utils.JacksonUtils;
-import com.alibaba.nacos.common.utils.Objects;
 import com.alibaba.nacos.core.cluster.Member;
 import com.alibaba.nacos.core.cluster.ServerMemberManager;
 import com.alibaba.nacos.naming.consistency.ConsistencyService;
@@ -44,12 +44,9 @@ import com.alibaba.nacos.naming.pojo.InstanceOperationInfo;
 import com.alibaba.nacos.naming.push.UdpPushService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.collect.Sets;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.alibaba.nacos.common.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -60,6 +57,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
@@ -336,7 +334,7 @@ public class ServiceManager implements RecordListener<Service> {
                 StringBuilder stringBuilder = new StringBuilder();
                 List<Instance> allIps = service.allIPs();
                 for (Instance instance : allIps) {
-                    stringBuilder.append(instance.toIpAddr()).append("_").append(instance.isHealthy()).append(",");
+                    stringBuilder.append(instance.toIpAddr()).append('_').append(instance.isHealthy()).append(',');
                 }
                 Loggers.EVT_LOG
                         .debug("[HEALTH-STATUS-UPDATED] namespace: {}, service: {}, ips: {}", service.getNamespaceId(),
@@ -772,7 +770,7 @@ public class ServiceManager implements RecordListener<Service> {
         
         List<Instance> currentIPs = service.allIPs(ephemeral);
         Map<String, Instance> currentInstances = new HashMap<>(currentIPs.size());
-        Set<String> currentInstanceIds = Sets.newHashSet();
+        Set<String> currentInstanceIds = CollectionUtils.set();
         
         for (Instance instance : currentIPs) {
             currentInstances.put(instance.toIpAddr(), instance);
@@ -887,7 +885,7 @@ public class ServiceManager implements RecordListener<Service> {
         List<Service> result = new ArrayList<>();
         for (Map.Entry<String, Service> entry : chooseServiceMap(namespaceId).entrySet()) {
             Service service = entry.getValue();
-            String key = service.getName() + ":" + ArrayUtils.toString(service.getOwners());
+            String key = service.getName() + ":" + service.getOwners().toString();
             if (key.matches(regex)) {
                 result.add(service);
             }
