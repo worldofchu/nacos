@@ -93,17 +93,17 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
         if (isDerby()) {
             selectSql = sqlFetchRows + " OFFSET " + startRow + " ROWS FETCH NEXT " + pageSize + " ROWS ONLY";
         } else if (lastMaxId != null) {
-            selectSql = sqlFetchRows + " and id > " + lastMaxId + " order by id asc" + " limit " + 0 + "," + pageSize;
+            selectSql = sqlFetchRows + " AND id > " + lastMaxId + " ORDER BY id ASC" + " LIMIT " + 0 + "," + pageSize;
         } else {
             switch (DatasourceUtil.getDatasourcePlatform()) {
                 case PropertiesConstant.MYSQL:
-                    selectSql = sqlFetchRows + " limit " + startRow + "," + pageSize;
+                    selectSql = sqlFetchRows + " LIMIT " + startRow + "," + pageSize;
                     break;
                 case PropertiesConstant.POSTGRESQL:
-                    selectSql = sqlFetchRows + " limit " + pageSize + " offset " + startRow;
+                    selectSql = sqlFetchRows + " LIMIT " + pageSize + " offset " + startRow;
                     break;
                 default:
-                    selectSql = sqlFetchRows + " limit " + startRow + "," + pageSize;
+            selectSql = sqlFetchRows + " LIMIT " + startRow + "," + pageSize;
                     break;
             }
         }
@@ -153,7 +153,7 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
                     selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
                     break;
                 default:
-                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
                     break;
             }
         }
@@ -203,7 +203,7 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
                     selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
                     break;
                 default:
-                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
                     break;
             }
         }
@@ -228,7 +228,7 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
         if (isDerby()) {
             switch (DatasourceUtil.getDatasourcePlatform()) {
                 case PropertiesConstant.MYSQL:
-                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
                     break;
                 case PropertiesConstant.POSTGRESQL:
                     selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
@@ -251,7 +251,7 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
         String sqlUpdate = sql;
         
         if (isDerby()) {
-            sqlUpdate = sqlUpdate.replaceAll("limit \\?", "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY");
+            sqlUpdate = sqlUpdate.replaceAll("LIMIT \\?", "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY");
         }
         
         try {
