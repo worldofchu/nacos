@@ -1,9 +1,25 @@
+/*
+ *  Copyright 1999-2018 Alibaba Group Holding Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package com.alibaba.nacos.sys.env;
 
 import com.alibaba.nacos.common.utils.StringUtils;
 
 /**
- * 数据源工具类
+ * DataSource Tool Utils.
  *
  * @author wangtan
  * @date 2021-06-11 15:11:57
@@ -20,13 +36,13 @@ public class DatasourceUtil {
     public static String datasourcePlatform = "";
 
     /**
-     * Don't let anyone else instantiate this class
+     * Don't let anyone else instantiate this class.
      */
     private DatasourceUtil() {
     }
 
     /**
-     * 获取当前数据源类型
+     * Get Current Datasource Type.
      *
      * @return String
      * @author wangtan
