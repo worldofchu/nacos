@@ -86,7 +86,7 @@ public class ExternalDataSourceProperties {
 
             switch (DatasourceUtil.getDatasourcePlatform()) {
                 case PropertiesConstant.MYSQL:
-            poolProperties.setDriverClassName(JDBC_DRIVER_NAME);
+                    poolProperties.setDriverClassName(JDBC_DRIVER_NAME);
                     break;
                 case PropertiesConstant.POSTGRESQL:
                     poolProperties.setDriverClassName(POSTGRESQL_JDBC_DRIVER_NAME);

@@ -103,7 +103,7 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
                     selectSql = sqlFetchRows + " LIMIT " + pageSize + " offset " + startRow;
                     break;
                 default:
-            selectSql = sqlFetchRows + " LIMIT " + startRow + "," + pageSize;
+                    selectSql = sqlFetchRows + " LIMIT " + startRow + "," + pageSize;
                     break;
             }
         }
@@ -153,7 +153,7 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
                     selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
                     break;
                 default:
-            selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
                     break;
             }
         }
@@ -203,7 +203,7 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
                     selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
                     break;
                 default:
-            selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
                     break;
             }
         }
@@ -228,7 +228,7 @@ class ExternalStoragePaginationHelperImpl<E> implements PaginationHelper {
         if (isDerby()) {
             switch (DatasourceUtil.getDatasourcePlatform()) {
                 case PropertiesConstant.MYSQL:
-            selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                    selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
                     break;
                 case PropertiesConstant.POSTGRESQL:
                     selectSql = selectSql.replaceAll("(?i)LIMIT \\?,\\?", "OFFSET ? LIMIT ? ");
