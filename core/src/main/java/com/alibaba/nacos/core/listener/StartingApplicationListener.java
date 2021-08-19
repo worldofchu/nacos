@@ -251,7 +251,7 @@ public class StartingApplicationListener implements NacosApplicationListener {
         // External data sources are used by default in cluster mode
         String datasourcePlatform = env.getProperty(DATASOURCE_PLATFORM_PROPERTY, DEFAULT_DATASOURCE_PLATFORM);
         boolean useExternalStorage = (DEFAULT_DATABASE.equalsIgnoreCase(datasourcePlatform) 
-        || DATABASE_POSTGRESQL.equalsIgnoreCase(datasourcePlatform));
+                || DATABASE_POSTGRESQL.equalsIgnoreCase(datasourcePlatform));
         
         // must initialize after setUseExternalDB
         // This value is true in stand-alone mode and false in cluster mode
