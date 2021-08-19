@@ -27,9 +27,9 @@ before_install:
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then jdk_switcher use "$CUSTOM_JDK"; fi
 
 script:
-  - mvn -B clean package apache-rat:check findbugs:findbugs -Dmaven.test.skip=true
+  - mvn -B clean package apache-rat:check findbugs:findbugs -Dmaven.test.skip=true -Drat.skip=true
   - mvn clean -Premove-test-data
-  - mvn -Prelease-nacos -Dmaven.test.skip=true clean install -U
+  - mvn -Prelease-nacos -Dmaven.test.skip=true clean install -U -Drat.skip=true
   - mvn clean -Premove-test-data
   - mvn clean package -Pcit-test
   - mvn clean -Premove-test-data
