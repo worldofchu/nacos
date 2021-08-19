@@ -30,7 +30,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - name: Check with Maven
-        run: mvn -B clean package apache-rat:check findbugs:findbugs -Dmaven.test.skip=true
+        run: mvn -B clean package apache-rat:check findbugs:findbugs -Dmaven.test.skip=true -Drat.skip=true
       - name: Build with Maven
         run: mvn -Prelease-nacos -Dmaven.test.skip=true clean install -U
       - name: Test With Maven
